@@ -4,7 +4,7 @@ import program from 'commander';
 import loadPage from '..';
 
 program
-  .version('0.0.1')
+  .version('0.0.5')
   .description('Save web-page to output directory')
   .option('--output [dir]', 'output directory (current by default)', process.cwd())
   .arguments('<url>')
