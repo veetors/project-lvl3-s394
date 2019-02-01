@@ -9,7 +9,6 @@ import nock from 'nock';
 import axios from 'axios';
 import adapter from 'axios/lib/adapters/http';
 import loadPage from '../src';
-import { checkIsPathExist } from '../src/helpers';
 
 axios.defaults.adatper = adapter;
 
@@ -25,8 +24,10 @@ let pageContentLocal;
 let imageContent;
 let stylesContent;
 let scriptContent;
+let tempDir;
 
 beforeAll(async () => {
+  tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'pageLoader-'));
   pageContent = await fs.readFile(pageContentPath, 'utf-8');
   pageContentLocal = await fs.readFile(pageContentLocalPath, 'utf-8');
 
@@ -48,7 +49,7 @@ beforeAll(async () => {
     .get('/local_resources/js/script.js')
     .reply(200, scriptContent);
 
-  currentFileName = await loadPage(`${hostName}${pathName}`, os.tmpdir());
+  currentFileName = await loadPage(`${hostName}${pathName}`, tempDir);
 });
 
 test('compare fileNames', async () => {
@@ -62,19 +63,19 @@ test('compare page content', async () => {
 });
 
 test('is styles file exist', async () => {
-  const isFileExist = await checkIsPathExist(path.join(os.tmpdir(), 'hexlet-io-courses_files', 'local_resources-css-styles.css'));
+  const error = await fs.access(path.join(tempDir, 'hexlet-io-courses_files', 'local_resources-css-styles.css'));
 
-  expect(isFileExist).toBeTruthy();
+  expect(error).toBeUndefined();
 });
 
 test('is script file exist', async () => {
-  const isFileExist = await checkIsPathExist(path.join(os.tmpdir(), 'hexlet-io-courses_files', 'local_resources-js-script.js'));
+  const error = await fs.access(path.join(tempDir, 'hexlet-io-courses_files', 'local_resources-js-script.js'));
 
-  expect(isFileExist).toBeTruthy();
+  expect(error).toBeUndefined();
 });
 
 test('is image file exist', async () => {
-  const isFileExist = await checkIsPathExist(path.join(os.tmpdir(), 'hexlet-io-courses_files', 'local_resources-img-image.jpg'));
+  const error = await fs.access(path.join(tempDir, 'hexlet-io-courses_files', 'local_resources-img-image.jpg'));
 
-  expect(isFileExist).toBeTruthy();
+  expect(error).toBeUndefined();
 });

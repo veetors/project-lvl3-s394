@@ -4,8 +4,7 @@ import url from 'url';
 import cheerio from 'cheerio';
 import axios from 'axios';
 import {
-  getLog,
-  checkIsPathExist,
+  debug,
   getLinkName,
   getFileName,
   getDirName,
@@ -35,7 +34,7 @@ const proccesHtml = (data, localPath) => {
       });
     });
 
-  getLog(links);
+  debug(links);
 
   return {
     links,
@@ -55,36 +54,24 @@ const downloadFile = (urlLink, resourceLink, localFolder) => {
 const downloadFiles = (urlLink, resourceLinks, localFolder) => {
   const newDirName = getDirName(urlLink);
   const newDirPath = path.join(localFolder, newDirName);
-
-  getLog(newDirPath);
-
-  return checkIsPathExist(newDirPath)
-    .then((isPathExist) => {
-      if (!isPathExist) {
-        return fs.promises.mkdir(newDirPath);
-      }
-    })
+  return fs.promises.mkdir(newDirPath)
     .then(() => Promise.all(
       resourceLinks.map(currLink => downloadFile(urlLink, currLink, newDirPath)),
     ));
 };
 
-export default async (urlLink, localFolder) => {
+export default (urlLink, localFolder) => {
   const fileName = getFileName(urlLink);
+  let proccesedHtml;
 
-  getLog(fileName);
+  debug(fileName);
 
-  return checkIsPathExist(localFolder)
-    .then((isPathExist) => {
-      if (!isPathExist) {
-        return fs.promises.mkdir(localFolder);
-      }
+  return axios.get(urlLink)
+    .then(({ data }) => proccesHtml(data, getDirName(urlLink)))
+    .then(({ links, html }) => {
+      proccesedHtml = html;
+      return downloadFiles(urlLink, links, localFolder);
     })
-    .then(() => axios.get(urlLink))
-    .then(({ data }) => {
-      const { links, html } = proccesHtml(data, getDirName(urlLink));
-      downloadFiles(urlLink, links, localFolder);
-      fs.promises.writeFile(path.join(localFolder, fileName), html, 'utf-8');
-    })
+    .then(() => fs.promises.writeFile(path.join(localFolder, fileName), proccesedHtml, 'utf-8'))
     .then(() => fileName);
 };

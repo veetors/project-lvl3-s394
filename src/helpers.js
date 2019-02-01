@@ -1,21 +1,6 @@
-import { promises as fs } from 'fs';
-import debug from 'debug';
 import { trim } from 'lodash/fp';
 
-const getLog = (massage) => {
-  const logger = debug('page-loader');
-  return logger(massage);
-};
-
-const checkIsPathExist = dirPath => fs.access(dirPath)
-  .then(() => true)
-  .catch((error) => {
-    if (error && error.code === 'ENOENT') {
-      return false;
-    }
-
-    throw error;
-  });
+const debug = require('debug')('page-loader');
 
 const getLinkName = (path) => {
   const str = trim(path);
@@ -35,8 +20,7 @@ const getFileName = url => `${getNameFromUrl(url)}.html`;
 const getDirName = url => `${getNameFromUrl(url)}_files`;
 
 export {
-  getLog,
-  checkIsPathExist,
+  debug,
   getLinkName,
   getFileName,
   getDirName,
