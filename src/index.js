@@ -4,6 +4,7 @@ import url from 'url';
 import cheerio from 'cheerio';
 import axios from 'axios';
 import {
+  getLog,
   checkIsPathExist,
   getLinkName,
   getFileName,
@@ -34,6 +35,8 @@ const proccesHtml = (data, localPath) => {
       });
     });
 
+  getLog(links);
+
   return {
     links,
     html: $.html,
@@ -44,6 +47,7 @@ const downloadFile = (urlLink, resourceLink, localFolder) => {
   const downloadLink = url.resolve(urlLink, resourceLink);
   const fileName = getLinkName(resourceLink);
   const newPathToFile = path.join(localFolder, fileName);
+
   return axios.get(downloadLink, { responseType: 'stream' })
     .then(({ data }) => data.pipe(fs.createWriteStream(newPathToFile)));
 };
@@ -51,6 +55,9 @@ const downloadFile = (urlLink, resourceLink, localFolder) => {
 const downloadFiles = (urlLink, resourceLinks, localFolder) => {
   const newDirName = getDirName(urlLink);
   const newDirPath = path.join(localFolder, newDirName);
+
+  getLog(newDirPath);
+
   return checkIsPathExist(newDirPath)
     .then((isPathExist) => {
       if (!isPathExist) {
@@ -64,6 +71,9 @@ const downloadFiles = (urlLink, resourceLinks, localFolder) => {
 
 export default async (urlLink, localFolder) => {
   const fileName = getFileName(urlLink);
+
+  getLog(fileName);
+
   return checkIsPathExist(localFolder)
     .then((isPathExist) => {
       if (!isPathExist) {
