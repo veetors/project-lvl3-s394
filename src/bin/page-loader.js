@@ -11,5 +11,8 @@ program
   .arguments('<url>')
   .action(url => loadPage(url, program.output)
     .then(() => process.exit(0))
-    .catch(handleError))
+    .catch((error) => {
+      handleError(error);
+      process.exit(1);
+    }))
   .parse(process.argv);
