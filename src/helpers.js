@@ -19,9 +19,32 @@ const getFileName = url => `${getNameFromUrl(url)}.html`;
 
 const getDirName = url => `${getNameFromUrl(url)}_files`;
 
+const handleError = (error) => {
+  const { code, response } = error;
+  const errors = {
+    ENOENT: 'output directory does not exist, please select other directory',
+    EACCES: 'do not have permission to write to the output directory, please select other directory',
+    EEXIST: 'file or directory with this name already exists, please select another directory',
+  };
+  const message = errors[code];
+
+  if (message) {
+    console.error(`Error: ${message}`);
+  } else if (response) {
+    const { status, config: { url } } = response;
+
+    console.error(`Error: ${status}, unreachable url ${url}`);
+  } else {
+    console.error(error);
+  }
+
+  process.exit(1);
+};
+
 export {
   debug,
   getLinkName,
   getFileName,
   getDirName,
+  handleError,
 };
