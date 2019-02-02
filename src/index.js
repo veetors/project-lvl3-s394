@@ -34,7 +34,7 @@ const proccesHtml = (data, localPath) => {
       });
     });
 
-  debug(links);
+  debug(`links for download:  ${links}`);
 
   return {
     links,
@@ -47,6 +47,9 @@ const downloadFile = (urlLink, resourceLink, localFolder) => {
   const fileName = getLinkName(resourceLink);
   const newPathToFile = path.join(localFolder, fileName);
 
+  debug(`downloadLink: ${downloadLink}`);
+  debug(`local resource fileName: ${fileName}`);
+
   return axios.get(downloadLink, { responseType: 'stream' })
     .then(({ data }) => data.pipe(fs.createWriteStream(newPathToFile)));
 };
@@ -54,6 +57,9 @@ const downloadFile = (urlLink, resourceLink, localFolder) => {
 const downloadFiles = (urlLink, resourceLinks, localFolder) => {
   const newDirName = getDirName(urlLink);
   const newDirPath = path.join(localFolder, newDirName);
+
+  debug(`dir for local resources: ${newDirPath}`);
+
   return fs.promises.mkdir(newDirPath)
     .then(() => Promise.all(
       resourceLinks.map(currLink => downloadFile(urlLink, currLink, newDirPath)),
@@ -64,7 +70,8 @@ export default (urlLink, localFolder) => {
   const fileName = getFileName(urlLink);
   let proccesedHtml;
 
-  debug(fileName);
+  debug(`localFolder: ${localFolder}`);
+  debug(`page fileName: ${fileName}`);
 
   return axios.get(urlLink)
     .then(({ data }) => proccesHtml(data, getDirName(urlLink)))

@@ -1,9 +1,9 @@
-import { trim } from 'lodash/fp';
+import { trimChars } from 'lodash/fp';
 
 const debug = require('debug')('page-loader');
 
 const getLinkName = (path) => {
-  const str = trim(path);
+  const str = trimChars('/', path);
   return str.replace(new RegExp('/', 'g'), '-');
 };
 
