@@ -11,6 +11,7 @@ import adapter from 'axios/lib/adapters/http';
 import loadPage from '../src';
 
 axios.defaults.adatper = adapter;
+nock.disableNetConnect();
 
 const hostName = 'https://hexlet.io';
 const pathName = '/courses';
@@ -30,52 +31,78 @@ beforeAll(async () => {
   tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'pageLoader-'));
   pageContent = await fs.readFile(pageContentPath, 'utf-8');
   pageContentLocal = await fs.readFile(pageContentLocalPath, 'utf-8');
-
-  nock.disableNetConnect();
-
-  nock(hostName)
-    .get(pathName)
-    .reply(200, pageContent);
-
-  nock(hostName)
-    .get('/local_resources/img/image.jpg')
-    .reply(200, imageContent);
-
-  nock(hostName)
-    .get('/local_resources/css/styles.css')
-    .reply(200, stylesContent);
-
-  nock(hostName)
-    .get('/local_resources/js/script.js')
-    .reply(200, scriptContent);
-
-  currentFileName = await loadPage(`${hostName}${pathName}`, tempDir);
 });
 
-test('compare fileNames', async () => {
-  expect(currentFileName).toBe(fileName);
+describe('success', () => {
+  beforeAll(async () => {
+    nock(hostName)
+      .get(pathName)
+      .reply(200, pageContent);
+
+    nock(hostName)
+      .get('/local_resources/img/image.jpg')
+      .reply(200, imageContent);
+
+    nock(hostName)
+      .get('/local_resources/css/styles.css')
+      .reply(200, stylesContent);
+
+    nock(hostName)
+      .get('/local_resources/js/script.js')
+      .reply(200, scriptContent);
+
+    currentFileName = await loadPage(`${hostName}${pathName}`, tempDir);
+  });
+
+  test('compare fileNames', async () => {
+    expect(currentFileName).toBe(fileName);
+  });
+
+  test('compare page content', async () => {
+    const fileContent = await fs.readFile(fileContentPath, 'utf-8');
+
+    expect(fileContent).toBe(pageContentLocal);
+  });
+
+  test('is styles file exist', async () => {
+    const error = await fs.access(path.join(tempDir, 'hexlet-io-courses_files', 'local_resources-css-styles.css'));
+
+    expect(error).toBeUndefined();
+  });
+
+  test('is script file exist', async () => {
+    const error = await fs.access(path.join(tempDir, 'hexlet-io-courses_files', 'local_resources-js-script.js'));
+
+    expect(error).toBeUndefined();
+  });
+
+  test('is image file exist', async () => {
+    const error = await fs.access(path.join(tempDir, 'hexlet-io-courses_files', 'local_resources-img-image.jpg'));
+
+    expect(error).toBeUndefined();
+  });
 });
 
-test('compare page content', async () => {
-  const fileContent = await fs.readFile(fileContentPath, 'utf-8');
+describe('error', () => {
+  beforeEach(() => {
+    nock(hostName)
+      .get(pathName)
+      .reply(200, pageContent);
 
-  expect(fileContent).toBe(pageContentLocal);
-});
+    nock(hostName)
+      .get('/cou')
+      .reply(404, pageContent);
+  });
 
-test('is styles file exist', async () => {
-  const error = await fs.access(path.join(tempDir, 'hexlet-io-courses_files', 'local_resources-css-styles.css'));
+  test('output directory does not exist', async () => {
+    await expect(loadPage(`${hostName}${pathName}`, '/ENOENT')).rejects.toThrowErrorMatchingSnapshot();
+  });
 
-  expect(error).toBeUndefined();
-});
+  test('permission denied', async () => {
+    await expect(loadPage(`${hostName}${pathName}`, '/Users')).rejects.toThrowErrorMatchingSnapshot();
+  });
 
-test('is script file exist', async () => {
-  const error = await fs.access(path.join(tempDir, 'hexlet-io-courses_files', 'local_resources-js-script.js'));
-
-  expect(error).toBeUndefined();
-});
-
-test('is image file exist', async () => {
-  const error = await fs.access(path.join(tempDir, 'hexlet-io-courses_files', 'local_resources-img-image.jpg'));
-
-  expect(error).toBeUndefined();
+  test('bad url', async () => {
+    await expect(loadPage(`${hostName}/cou`, tempDir)).rejects.toThrowErrorMatchingSnapshot();
+  });
 });
