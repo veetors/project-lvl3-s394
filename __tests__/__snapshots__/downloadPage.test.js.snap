@@ -4,4 +4,4 @@ exports[`error bad url 1`] = `"Request failed with status code 404"`;
 
 exports[`error output directory does not exist 1`] = `"ENOENT: no such file or directory, mkdir '/ENOENT/hexlet-io-courses_files'"`;
 
-exports[`error permission denied 1`] = `"EACCES: permission denied, mkdir '/Users/hexlet-io-courses_files'"`;
+exports[`error permission denied 1`] = `"EACCES: permission denied, mkdir '/hexlet-io-courses_files'"`;

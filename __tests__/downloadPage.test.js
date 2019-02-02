@@ -99,7 +99,7 @@ describe('error', () => {
   });
 
   test('permission denied', async () => {
-    await expect(loadPage(`${hostName}${pathName}`, '/Users')).rejects.toThrowErrorMatchingSnapshot();
+    await expect(loadPage(`${hostName}${pathName}`, '/')).rejects.toThrowErrorMatchingSnapshot();
   });
 
   test('bad url', async () => {
