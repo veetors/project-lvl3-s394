@@ -43,17 +43,6 @@ const proccesHtml = (data, localPath) => {
   };
 };
 
-const downloadResource = (resourceUrl, config = {}) => {
-  const promise = axios.get(resourceUrl, config);
-  const task = {
-    title: `Downloading ${resourceUrl}`,
-    task: () => promise,
-  };
-  runTasks([task]);
-
-  return promise;
-};
-
 const downloadAndSaveFile = (urlLink, resourceLink, localFolder) => {
   const downloadLink = url.resolve(urlLink, resourceLink);
   const fileName = getLinkName(resourceLink);
@@ -63,8 +52,9 @@ const downloadAndSaveFile = (urlLink, resourceLink, localFolder) => {
   debug(`downloadLink: ${downloadLink}`);
   debug(`local resource fileName: ${fileName}`);
 
-  return downloadResource(downloadLink, { responseType: 'stream' })
-    .then(({ data }) => data.pipe(fs.createWriteStream(newPathToFile)));
+  return axios.get(downloadLink, { responseType: 'stream' })
+    .then(({ data }) => data.pipe(fs.createWriteStream(newPathToFile)))
+    .then(() => debug(`saved to file ${newPathToFile}`));
 };
 
 const downloadFiles = (urlLink, resourceLinks, localFolder) => {
@@ -73,10 +63,19 @@ const downloadFiles = (urlLink, resourceLinks, localFolder) => {
 
   debug(`dir for local resources: ${newDirPath}`);
 
+  const tasks = resourceLinks.map((link) => {
+    const task = {
+      title: `Downloading ${link}`,
+      task: () => downloadAndSaveFile(urlLink, link, newDirPath),
+    };
+
+    return task;
+  });
+
+  debug(tasks);
+
   return fs.promises.mkdir(newDirPath)
-    .then(() => Promise.all(
-      resourceLinks.map(currLink => downloadAndSaveFile(urlLink, currLink, newDirPath)),
-    ));
+    .then(() => runTasks(tasks));
 };
 
 export default (urlLink, localFolder) => {
@@ -86,7 +85,7 @@ export default (urlLink, localFolder) => {
   debug(`localFolder: ${localFolder}`);
   debug(`page fileName: ${fileName}`);
 
-  return downloadResource(urlLink)
+  return axios.get(urlLink)
     .then(({ data }) => proccesHtml(data, getDirName(urlLink)))
     .then(({ links, html }) => {
       proccesedHtml = html;
