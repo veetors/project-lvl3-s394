@@ -9,5 +9,4 @@
 $ npm install -g page-loader-veetors
 ```
 
-- [step 3](https://asciinema.org/a/1Xw8CZRCnPpDeZ1jS23aIpWd6)
-- [step 4](https://asciinema.org/a/NH43gv1vBGSZINpnodHUgHG4J)
+[![asciicast](https://asciinema.org/a/qb20JWl1LdXg1gZA387VoGAHn.svg)](https://asciinema.org/a/qb20JWl1LdXg1gZA387VoGAHn)
