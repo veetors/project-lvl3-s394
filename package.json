@@ -1,6 +1,6 @@
 {
   "name": "page-loader-veetors",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "page-loader",
   "main": "dist/index.js",
   "bin": {

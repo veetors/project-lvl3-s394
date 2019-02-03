@@ -5,7 +5,7 @@ import loadPage from '..';
 import { handleError } from '../helpers';
 
 program
-  .version('0.0.5')
+  .version('0.1.0')
   .description('Save web-page to output directory')
   .option('--output [dir]', 'output directory (current by default)', process.cwd())
   .arguments('<url>')
