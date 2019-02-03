@@ -5,6 +5,7 @@ import cheerio from 'cheerio';
 import axios from 'axios';
 import {
   debug,
+  runTasks,
   getLinkName,
   getFileName,
   getDirName,
@@ -42,15 +43,27 @@ const proccesHtml = (data, localPath) => {
   };
 };
 
-const downloadFile = (urlLink, resourceLink, localFolder) => {
+const downloadResource = (resourceUrl, config = {}) => {
+  const promise = axios.get(resourceUrl, config);
+  const task = {
+    title: `Downloading ${resourceUrl}`,
+    task: () => promise,
+  };
+  runTasks([task]);
+
+  return promise;
+};
+
+const downloadAndSaveFile = (urlLink, resourceLink, localFolder) => {
   const downloadLink = url.resolve(urlLink, resourceLink);
   const fileName = getLinkName(resourceLink);
   const newPathToFile = path.join(localFolder, fileName);
 
+  debug(`newPathToFile: ${newPathToFile}`);
   debug(`downloadLink: ${downloadLink}`);
   debug(`local resource fileName: ${fileName}`);
 
-  return axios.get(downloadLink, { responseType: 'stream' })
+  return downloadResource(downloadLink, { responseType: 'stream' })
     .then(({ data }) => data.pipe(fs.createWriteStream(newPathToFile)));
 };
 
@@ -62,7 +75,7 @@ const downloadFiles = (urlLink, resourceLinks, localFolder) => {
 
   return fs.promises.mkdir(newDirPath)
     .then(() => Promise.all(
-      resourceLinks.map(currLink => downloadFile(urlLink, currLink, newDirPath)),
+      resourceLinks.map(currLink => downloadAndSaveFile(urlLink, currLink, newDirPath)),
     ));
 };
 
@@ -73,7 +86,7 @@ export default (urlLink, localFolder) => {
   debug(`localFolder: ${localFolder}`);
   debug(`page fileName: ${fileName}`);
 
-  return axios.get(urlLink)
+  return downloadResource(urlLink)
     .then(({ data }) => proccesHtml(data, getDirName(urlLink)))
     .then(({ links, html }) => {
       proccesedHtml = html;

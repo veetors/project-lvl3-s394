@@ -1,3 +1,4 @@
+import Listr from 'listr';
 import { trimChars } from 'lodash/fp';
 
 const debug = require('debug')('page-loader');
@@ -39,10 +40,13 @@ const handleError = (error) => {
   }
 };
 
+const runTasks = tasks => new Listr(tasks, { concurrent: true }).run();
+
 export {
   debug,
   getLinkName,
   getFileName,
   getDirName,
   handleError,
+  runTasks,
 };
